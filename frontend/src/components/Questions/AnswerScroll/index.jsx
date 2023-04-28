@@ -1,7 +1,5 @@
 const AnswerScroll = () => {
-  return (
-    <div>answers</div>
-  )
+    return <div>answers</div>
 }
 
-export default AnswerScroll;
+export default AnswerScroll

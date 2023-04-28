@@ -1,43 +1,42 @@
-import {useState, useEffect} from 'react';
+import { useState, useEffect } from "react"
 
-import Video from '../components/Video';
-import Questions from '../components/Questions';
-import SpeechDetector from '../components/SpeechDetector';
-import Toolbar from '../components/Toolbar';
+import Video from "../components/Video"
+import Questions from "../components/Questions"
+import SpeechDetector from "../components/SpeechDetector"
+import Toolbar from "../components/Toolbar"
 
-let currentRecorder = null;
+let currentRecorder = null
 const CameraPage = (props) => {
-  const [questionIndex, setQuestionIndex] = useState(1);
-  const [timer, setTimer] = useState(0);
-  const [currentTranscript, setCurrentTranscript] = useState('hello');
-  const [started, setStarted] = useState(false);
-  const moveNext = async () => {
-    if (questionIndex < 10) {
-      setQuestionIndex(questionIndex + 1);
-      console.log(currentTranscript);
+    const [questionIndex, setQuestionIndex] = useState(1)
+    const [timer, setTimer] = useState(0)
+    const [currentTranscript, setCurrentTranscript] = useState("hello")
+    const [started, setStarted] = useState(false)
+    const moveNext = async () => {
+        if (questionIndex < 10) {
+            setQuestionIndex(questionIndex + 1)
+            console.log(currentTranscript)
+        } else {
+            props.setNext()
+            //await currentRecorder.stop(questionIndex);
+        }
     }
-    else {
-      props.setNext();
-      //await currentRecorder.stop(questionIndex);
+    const moveBack = async () => {
+        if (questionIndex > 1) {
+            console.log(currentTranscript)
+            setQuestionIndex(questionIndex - 1)
+        }
     }
-  }
-  const moveBack = async () => {
-    if (questionIndex > 1) {
-      console.log(currentTranscript);
-      setQuestionIndex(questionIndex - 1);
-    }
-  }
-  useEffect(() => {
-    if (started) {
-      setTimeout(() => {
-        setTimer(timer + 1);
-      }, 1000);
-    }
-  }, [timer]);
+    useEffect(() => {
+        if (started) {
+            setTimeout(() => {
+                setTimer(timer + 1)
+            }, 1000)
+        }
+    }, [timer])
 
-  const recordAudio = () =>
-  new Promise(async resolve => {
-    /*const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const recordAudio = () =>
+        new Promise(async (resolve) => {
+            /*const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream, { audioBitsPerSecond: 128000, mimeType: "audio/ogg" });
     const audioChunks = [];
 
@@ -88,23 +87,29 @@ const CameraPage = (props) => {
       });
 
     resolve({ start, stop });*/
-    console.log('recording is gone');
-  });
+            console.log("recording is gone")
+        })
 
+    const startRecording = async () => {
+        //currentRecorder = await recordAudio();
+        //currentRecorder.start();
+    }
 
-  const startRecording = async () => {
-    //currentRecorder = await recordAudio();
-    //currentRecorder.start();
-  }
-
-  return (
-    <div>
-      <Video started={started} data={props.data} setData={props.setData} setEmotions={props.setEmotions}/>
-      <SpeechDetector setCurrentTranscript={setCurrentTranscript} startTimer={() => {setStarted(true); setTimer(1);}} startRecording={startRecording}/>
-      <Questions questionIndex={questionIndex} totalQuestions={10} moveNext={moveNext} moveBack={moveBack}/>
-      <Toolbar timer={timer} moveNext={moveNext} moveBack={moveBack}/>
-    </div>
-  )
+    return (
+        <div>
+            <Video started={started} data={props.data} setData={props.setData} setEmotions={props.setEmotions} />
+            <SpeechDetector
+                setCurrentTranscript={setCurrentTranscript}
+                startTimer={() => {
+                    setStarted(true)
+                    setTimer(1)
+                }}
+                startRecording={startRecording}
+            />
+            <Questions questionIndex={questionIndex} totalQuestions={10} moveNext={moveNext} moveBack={moveBack} />
+            <Toolbar timer={timer} moveNext={moveNext} moveBack={moveBack} />
+        </div>
+    )
 }
 
-export default CameraPage;
+export default CameraPage

@@ -1,11 +1,11 @@
-import OnboardingPage from '../components/OnboardingPage';
+import OnboardingPage from "../components/OnboardingPage"
 
 const OnboardingPageContainer = () => {
-  return (
-    <>
-      <OnboardingPage />
-    </>
-  )
+    return (
+        <>
+            <OnboardingPage />
+        </>
+    )
 }
 
-export default OnboardingPageContainer;
+export default OnboardingPageContainer

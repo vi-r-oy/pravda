@@ -1,9 +1,5 @@
-import './style.scss';
+import "./style.scss"
 
-const ParentPage = (props) => (
-  <div className="parent-page">
-    {props.children}
-  </div>
-)
+const ParentPage = (props) => <div className="parent-page">{props.children}</div>
 
-export default ParentPage;
+export default ParentPage
