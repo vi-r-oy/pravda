@@ -16,12 +16,11 @@ let recorder = new MicRecorder({ bitRate: 128 })
 const assembly = axios.create({
     baseURL: "https://api.assemblyai.com/v2",
     headers: {
-      authorization: "e2d98c1496ca45378c8fe5154eaa6133",
-      "content-type": "application/json",
-      "transfer-encoding": "chunked",
+        authorization: "e2d98c1496ca45378c8fe5154eaa6133",
+        "content-type": "application/json",
+        "transfer-encoding": "chunked",
     },
-  })
-
+})
 
 const SpeechDetector = (props) => {
     const [clicked, setClicked] = useState(false)
@@ -30,7 +29,6 @@ const SpeechDetector = (props) => {
     const [transcriptID, setTranscriptID] = useState("")
     const [transcriptData, setTranscriptData] = useState("")
     const [customTranscript, setCustomTranscript] = useState("")
-
 
     const processFrame = (data) => {
         const values = Object.values(data)
@@ -51,27 +49,27 @@ const SpeechDetector = (props) => {
     const startRecordingAudio = () => {
         // Check if recording isn't blocked by browser
         recorder.start().then(() => {
-        //   setIsRecording(true)
+            //   setIsRecording(true)
         })
-      }
-    
-      const stopRecordingAudio = () => {
+    }
+
+    const stopRecordingAudio = () => {
         recorder
-          .stop()
-          .getMp3()
-          .then(([buffer, blob]) => {
-            const file = new File(buffer, "audio.mp3", {
-              type: blob.type,
-              lastModified: Date.now(),
+            .stop()
+            .getMp3()
+            .then(([buffer, blob]) => {
+                const file = new File(buffer, "audio.mp3", {
+                    type: blob.type,
+                    lastModified: Date.now(),
+                })
+                const newBlobUrl = URL.createObjectURL(blob)
+                // setBlobUrl(newBlobUrl)
+                // setIsRecording(false)
+                setAudioFile(file)
+                console.debug("File:", file, newBlobUrl)
             })
-            const newBlobUrl = URL.createObjectURL(blob)
-            // setBlobUrl(newBlobUrl)
-            // setIsRecording(false)
-            setAudioFile(file)
-            console.debug("File:", file, newBlobUrl)
-          })
-          .catch((e) => console.log(e))
-      }
+            .catch((e) => console.log(e))
+    }
 
     const startRecording = () => {
         props.startRecording()
@@ -115,82 +113,73 @@ const SpeechDetector = (props) => {
 
     const [uploadURL, setUploadURL] = useState("")
 
-  // Upload the Audio File and retrieve the Upload URL
-  useEffect(() => {
-    if (audioFile) {
-      assembly
-        .post("/upload", audioFile)
-        .then((res) => setUploadURL(res.data.upload_url))
-        .catch((err) => console.error(err))
-    }
-  }, [audioFile])
-
-  useEffect(() => {
-    if (uploadURL) {
-        assembly
-        .post("/transcript", {
-            audio_url: uploadURL,
-        })
-        .then((res) => {
-            console.debug("Transcript id:", res.data.id)
-            setTranscriptID(res.data.id)
-        })
-        .catch((err) => console.error(err))
-
-        console.log("Transcript id:", transcriptID)
-    }
-}, [uploadURL])
-
-const checkStatusHandler = async () => {
-    try {
-      await assembly.get(`/transcript/${transcriptID}`).then((res) => {
-        setTranscriptData(res.data)
-        console.debug("transcriptData:", res.data)
-		setCustomTranscript(res.data.text)
-      })
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-//   console.log(transcriptData)
-//   console.log("transcriptData:", transcriptData)
-
-  useEffect(() => {
-    if(transcriptID) {
-        const interval = setInterval(() => {
-        if (transcriptData.status !== "completed") {
-            checkStatusHandler()
-        } else {
-            // setIsLoading(false)
-            setCustomTranscript(transcriptData.text)
-            console.debug("Transcript:", transcriptData)
-
-
-            clearInterval(interval)
+    // Upload the Audio File and retrieve the Upload URL
+    useEffect(() => {
+        if (audioFile) {
+            assembly
+                .post("/upload", audioFile)
+                .then((res) => setUploadURL(res.data.upload_url))
+                .catch((err) => console.error(err))
         }
-        }, 1000)
-        return () => clearInterval(interval)
+    }, [audioFile])
+
+    useEffect(() => {
+        if (uploadURL) {
+            assembly
+                .post("/transcript", {
+                    audio_url: uploadURL,
+                })
+                .then((res) => {
+                    console.debug("Transcript id:", res.data.id)
+                    setTranscriptID(res.data.id)
+                })
+                .catch((err) => console.error(err))
+
+            console.log("Transcript id:", transcriptID)
+        }
+    }, [uploadURL])
+
+    const checkStatusHandler = async () => {
+        try {
+            await assembly.get(`/transcript/${transcriptID}`).then((res) => {
+                setTranscriptData(res.data)
+                console.debug("transcriptData:", res.data)
+                setCustomTranscript(res.data.text)
+            })
+        } catch (err) {
+            console.error(err)
+        }
     }
-  }, [transcriptID])
 
+    //   console.log(transcriptData)
+    //   console.log("transcriptData:", transcriptData)
 
-  console.log("Upload url:", uploadURL)
+    useEffect(() => {
+        if (transcriptID) {
+            const interval = setInterval(() => {
+                if (transcriptData.status !== "completed") {
+                    checkStatusHandler()
+                } else {
+                    // setIsLoading(false)
+                    setCustomTranscript(transcriptData.text)
+                    console.debug("Transcript:", transcriptData)
 
-    const {
-        transcript,
-        interimTranscript,
-        finalTranscript,
-        resetTranscript,
-        listening,
-        } = useSpeechRecognition();
-    
+                    clearInterval(interval)
+                }
+            }, 1000)
+            return () => clearInterval(interval)
+        }
+    }, [transcriptID])
+
+    console.log("Upload url:", uploadURL)
+
+    const { transcript, interimTranscript, finalTranscript, resetTranscript, listening } = useSpeechRecognition()
+
     // console.log("Transcript:", {transcript,
     //     interimTranscript,
     //     finalTranscript,
     //     resetTranscript,
     // })
-
 
     const handleListing = () => {
         console.debug("Starting to listen")
@@ -198,27 +187,25 @@ const checkStatusHandler = async () => {
         // setIsListening(true);
         SpeechRecognition.startListening({
             continuous: true,
-        });
-        };
+        })
+    }
 
+    const stopHandle = () => {
+        // setIsListening(false);
+        SpeechRecognition.stopListening()
+    }
 
-        const stopHandle = () => {
-            // setIsListening(false);
-            SpeechRecognition.stopListening();
-        };
+    const handleReset = () => {
+        stopHandle()
+        resetTranscript()
+    }
 
-        const handleReset = () => {
-            stopHandle();
-            resetTranscript();
-        };
-        
-        useEffect(() => {
-            if (finalTranscript !== '') {
-                console.log('Got final result:', finalTranscript);
-                const score = sentiment.analyze(finalTranscript)
-            }
-        }, [interimTranscript, finalTranscript]);
-
+    useEffect(() => {
+        if (finalTranscript !== "") {
+            console.log("Got final result:", finalTranscript)
+            const score = sentiment.analyze(finalTranscript)
+        }
+    }, [interimTranscript, finalTranscript])
 
     useEffect(() => {
         handleListing()
@@ -234,14 +221,13 @@ const checkStatusHandler = async () => {
         }
     }, [transcript])
 
-
     if (!SpeechRecognition.browserSupportsSpeechRecognition()) {
         return null
     }
 
     return (
         <>
-        {/* <div style={{ zIndex: 9999}}>
+            {/* <div style={{ zIndex: 9999}}>
                     <p>Microphone: {listening ? 'on' : 'off'}</p>
                     <button onClick={() => {console.log("Done"); SpeechRecognition.startListening(); console.log("Transcript:", transcript)}}>Start</button>
                     <button onClick={() => {console.log("Stopped"); SpeechRecognition.stopListening(); console.log("Transcript:", transcript)}}>Stop</button>
@@ -250,7 +236,6 @@ const checkStatusHandler = async () => {
                     </div> */}
 
             <div className="speech-detector">
-                
                 <div id="visualizer" ref={visualizerRef}>
                     <div></div>
                     <div></div>
@@ -269,18 +254,22 @@ const checkStatusHandler = async () => {
                         <span>{customTranscript}&nbsp;</span>
                     </div>
                 </div>
-
-                
             </div>
 
-            {!clicked ? <img onClick={() => {
-                console.debug("Start recording")
-                startRecordingAudio()
-                setTimeout(() => {
-                    console.debug("Stopping recording audio")
-                    stopRecordingAudio()
-                }, 5000)
-            }} id="start-recording" src={start} /> : null}
+            {!clicked ? (
+                <img
+                    onClick={() => {
+                        console.debug("Start recording")
+                        startRecordingAudio()
+                        setTimeout(() => {
+                            console.debug("Stopping recording audio")
+                            stopRecordingAudio()
+                        }, 5000)
+                    }}
+                    id="start-recording"
+                    src={start}
+                />
+            ) : null}
         </>
     )
 }

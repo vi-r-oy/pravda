@@ -20,7 +20,6 @@ const ResultPageContainer = (props) => {
     const [overallHealthScore, setOverallHealthScore] = useState(0)
     const [physicalHealthScore, setPhysicalHealthScore] = useState(0)
 
-
     const [newEmotionData, setEmotion] = useState([
         ["name1", "318"],
         ["name2", "93"],
@@ -45,7 +44,6 @@ const ResultPageContainer = (props) => {
         setEmotion(sortable.slice(0, 5))
     }, [props.emotionData])
 
-
     function ran(x, y) {
         return Math.floor(Math.random() * (y - x + 1)) + x
     }
@@ -55,9 +53,8 @@ const ResultPageContainer = (props) => {
         let overallHealthScore = localStorage.getItem("overall-health-score")
         let physicalHealthScore = localStorage.getItem("physical-health-score")
 
-
         setTimeout(() => {
-            if(!mentalHealthScore || !overallHealthScore || !physicalHealthScore) {
+            if (!mentalHealthScore || !overallHealthScore || !physicalHealthScore) {
                 mentalHealthScore = ran(85, 93)
                 overallHealthScore = ran(86, 94)
                 physicalHealthScore = ran(70, 93)
@@ -72,7 +69,6 @@ const ResultPageContainer = (props) => {
             setPhysicalHealthScore(physicalHealthScore)
         }, 2500)
     }, [])
-
 
     return (
         <>

@@ -12,7 +12,7 @@ const CameraPage = (props) => {
     const [timer, setTimer] = useState(0)
     const [currentTranscript, setCurrentTranscript] = useState("hello")
     const [started, setStarted] = useState(false)
-    
+
     const moveNext = async () => {
         if (questionIndex < 10) {
             setQuestionIndex(questionIndex + 1)
@@ -40,27 +40,27 @@ const CameraPage = (props) => {
 
     const recordAudio = () =>
         new Promise(async (resolve) => {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const mediaRecorder = new MediaRecorder(stream, { audioBitsPerSecond: 128000, mimeType: "audio/mp3" });
-            const audioChunks = [];
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+            const mediaRecorder = new MediaRecorder(stream, { audioBitsPerSecond: 128000, mimeType: "audio/mp3" })
+            const audioChunks = []
 
-            mediaRecorder.addEventListener("dataavailable", event => {
-                audioChunks.push(event.data);
-            });
+            mediaRecorder.addEventListener("dataavailable", (event) => {
+                audioChunks.push(event.data)
+            })
 
             const start = () => {
-                mediaRecorder.start();
-                console.log('recording started!');
+                mediaRecorder.start()
+                console.log("recording started!")
             }
 
             const stop = (index) =>
-                new Promise(resolve => {
+                new Promise((resolve) => {
                     mediaRecorder.addEventListener("stop", async () => {
-                        const audioBlob = new Blob(audioChunks, { type: "audio/ogg" });
-                        const audioUrl = URL.createObjectURL(audioBlob);
-                        const audio = new Audio(audioUrl);
-                        const play = () => audio.play();
-                        resolve({ audioBlob, audioUrl, play });
+                        const audioBlob = new Blob(audioChunks, { type: "audio/ogg" })
+                        const audioUrl = URL.createObjectURL(audioBlob)
+                        const audio = new Audio(audioUrl)
+                        const play = () => audio.play()
+                        resolve({ audioBlob, audioUrl, play })
 
                         // const response = await fetch(`https://api.assemblyai.com/v2/transcript`, {
                         //     method: 'POST',
@@ -80,19 +80,18 @@ const CameraPage = (props) => {
                         //         throw new Error(error);
                         //     });
 
-
                         // TODO: Replace with google speech to text response
                         // setRecordings((recordings) => {
                         //     const newRecordings = {...recordings};
                         //     newRecordings[index] = audioUrl;
                         // });
-                    });
+                    })
 
-                    mediaRecorder.stop();
-                });
+                    mediaRecorder.stop()
+                })
 
-                resolve({ start, stop });
-                console.log("recording is gone")
+            resolve({ start, stop })
+            console.log("recording is gone")
         })
 
     const startRecording = async () => {
@@ -112,13 +111,11 @@ const CameraPage = (props) => {
                 }}
                 startRecording={startRecording}
             />
-            
+
             <Questions questionIndex={questionIndex} totalQuestions={10} moveNext={moveNext} moveBack={moveBack} />
             <Toolbar timer={timer} moveNext={moveNext} moveBack={moveBack} />
 
-            <Dictaphone>
-                
-            </Dictaphone>
+            <Dictaphone></Dictaphone>
         </div>
     )
 }

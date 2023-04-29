@@ -9,7 +9,7 @@ import HomePage from "./containers/HomePage"
 import MainPage from "./containers/MainPage"
 import OnboardingPage from "./containers/OnboardingPage"
 
-ReactDOM.render( 
+ReactDOM.render(
     <React.StrictMode>
         <Router>
             <Switch>

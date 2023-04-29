@@ -25,11 +25,14 @@ const NavBar = (props) => {
                     <h1>Privacy</h1>
                 </NavLink>
                 <NavLink to="/onboarding">
-                    <div className="restart-container" onClick={() => {
-                        localStorage.removeItem("mental-health-score")
-                        localStorage.removeItem("overall-health-score")
-                        localStorage.removeItem("physical-health-score")
-                    }}>
+                    <div
+                        className="restart-container"
+                        onClick={() => {
+                            localStorage.removeItem("mental-health-score")
+                            localStorage.removeItem("overall-health-score")
+                            localStorage.removeItem("physical-health-score")
+                        }}
+                    >
                         <img src={restart} alt="restart" className="restart-button" />
                         <h1 className="restart">Restart</h1>
                     </div>
