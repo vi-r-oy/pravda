@@ -27,6 +27,9 @@ const SpeechDetector = (props) => {
     const [clicked, setClicked] = useState(false)
     const visualizerRef = useRef(null)
     const [audioFile, setAudioFile] = useState(null)
+    const [transcriptID, setTranscriptID] = useState("")
+    const [transcriptData, setTranscriptData] = useState("")
+    const [customTranscript, setCustomTranscript] = useState("")
 
 
     const processFrame = (data) => {
@@ -64,7 +67,7 @@ const SpeechDetector = (props) => {
             const newBlobUrl = URL.createObjectURL(blob)
             // setBlobUrl(newBlobUrl)
             // setIsRecording(false)
-            // setAudioFile(file)
+            setAudioFile(file)
             console.debug("File:", file, newBlobUrl)
           })
           .catch((e) => console.log(e))
@@ -122,7 +125,57 @@ const SpeechDetector = (props) => {
     }
   }, [audioFile])
 
-  console.log(uploadURL)
+  useEffect(() => {
+    if (uploadURL) {
+        assembly
+        .post("/transcript", {
+            audio_url: uploadURL,
+        })
+        .then((res) => {
+            console.debug("Transcript id:", res.data.id)
+            setTranscriptID(res.data.id)
+        })
+        .catch((err) => console.error(err))
+
+        console.log("Transcript id:", transcriptID)
+    }
+}, [uploadURL])
+
+const checkStatusHandler = async () => {
+    try {
+      await assembly.get(`/transcript/${transcriptID}`).then((res) => {
+        setTranscriptData(res.data)
+        console.debug("transcriptData:", res.data)
+		setCustomTranscript(res.data.text)
+      })
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+//   console.log(transcriptData)
+//   console.log("transcriptData:", transcriptData)
+
+  useEffect(() => {
+    if(transcriptID) {
+        const interval = setInterval(() => {
+        if (transcriptData.status !== "completed") {
+            checkStatusHandler()
+        } else {
+            // setIsLoading(false)
+            setCustomTranscript(transcriptData.text)
+            console.debug("Transcript:", transcriptData)
+
+
+            clearInterval(interval)
+        }
+        }, 1000)
+        return () => clearInterval(interval)
+    }
+  }, [transcriptID])
+
+
+  console.log("Upload url:", uploadURL)
 
     const {
         transcript,
@@ -132,11 +185,11 @@ const SpeechDetector = (props) => {
         listening,
         } = useSpeechRecognition();
     
-    console.log("Transcript:", {transcript,
-        interimTranscript,
-        finalTranscript,
-        resetTranscript,
-    })
+    // console.log("Transcript:", {transcript,
+    //     interimTranscript,
+    //     finalTranscript,
+    //     resetTranscript,
+    // })
 
 
     const handleListing = () => {
@@ -211,10 +264,10 @@ const SpeechDetector = (props) => {
                 </div>
 
                 <div className="speech-content">
-                    {/* <div>
+                    <div>
                         <h1>Live Transcript</h1>
-                        <span>{transcript}&nbsp;</span>
-                    </div> */}
+                        <span>{customTranscript}&nbsp;</span>
+                    </div>
                 </div>
 
                 

@@ -7,6 +7,7 @@
         "@testing-library/react": "^11.1.0",
         "@testing-library/user-event": "^12.1.10",
         "antd": "^4.13.1",
+        "axios": "^1.4.0",
         "cwise": "^1.0.10",
         "face-api.js": "^0.22.2",
         "fetch": "^1.1.0",
