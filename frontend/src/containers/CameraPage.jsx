@@ -4,6 +4,7 @@ import Video from "../components/Video"
 import Questions from "../components/Questions"
 import SpeechDetector from "../components/SpeechDetector"
 import Toolbar from "../components/Toolbar"
+import Dictaphone from "../components/SpeechDetector/NewSpeech"
 
 let currentRecorder = null
 const CameraPage = (props) => {
@@ -111,8 +112,13 @@ const CameraPage = (props) => {
                 }}
                 startRecording={startRecording}
             />
+            
             <Questions questionIndex={questionIndex} totalQuestions={10} moveNext={moveNext} moveBack={moveBack} />
             <Toolbar timer={timer} moveNext={moveNext} moveBack={moveBack} />
+
+            <Dictaphone>
+                
+            </Dictaphone>
         </div>
     )
 }

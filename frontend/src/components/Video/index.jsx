@@ -155,6 +155,7 @@ const Video = (props) => {
         })
     }, [])
 
+
     return (
         <div className="video-component">
             <Webcam

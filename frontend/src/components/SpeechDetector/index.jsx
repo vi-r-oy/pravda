@@ -1,16 +1,33 @@
+import start from "../../assets/start.png"
+import "./style.scss"
 import React, { useEffect, useRef, useState } from "react"
+import Sentiment from "sentiment"
+import MicRecorder from "mic-recorder-to-mp3"
+import axios from "axios"
 
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition"
 
-import start from "../../assets/start.png"
-
-import "./style.scss"
+const sentiment = new Sentiment()
 
 const visualValueCount = 9
+
+let recorder = new MicRecorder({ bitRate: 128 })
+
+const assembly = axios.create({
+    baseURL: "https://api.assemblyai.com/v2",
+    headers: {
+      authorization: "e2d98c1496ca45378c8fe5154eaa6133",
+      "content-type": "application/json",
+      "transfer-encoding": "chunked",
+    },
+  })
+
 
 const SpeechDetector = (props) => {
     const [clicked, setClicked] = useState(false)
     const visualizerRef = useRef(null)
+    const [audioFile, setAudioFile] = useState(null)
+
 
     const processFrame = (data) => {
         const values = Object.values(data)
@@ -28,12 +45,41 @@ const SpeechDetector = (props) => {
         }
     }
 
+    const startRecordingAudio = () => {
+        // Check if recording isn't blocked by browser
+        recorder.start().then(() => {
+        //   setIsRecording(true)
+        })
+      }
+    
+      const stopRecordingAudio = () => {
+        recorder
+          .stop()
+          .getMp3()
+          .then(([buffer, blob]) => {
+            const file = new File(buffer, "audio.mp3", {
+              type: blob.type,
+              lastModified: Date.now(),
+            })
+            const newBlobUrl = URL.createObjectURL(blob)
+            // setBlobUrl(newBlobUrl)
+            // setIsRecording(false)
+            // setAudioFile(file)
+            console.debug("File:", file, newBlobUrl)
+          })
+          .catch((e) => console.log(e))
+      }
+
     const startRecording = () => {
         props.startRecording()
         props.startTimer()
         setClicked(true)
-        SpeechRecognition.startListening({ continuous: true })
+        console.debug("Listening now")
+
+        SpeechRecognition.startListening()
+
         const audioContext = new AudioContext()
+
         navigator.mediaDevices
             .getUserMedia({ audio: true, video: false })
             .then((stream) => {
@@ -42,6 +88,7 @@ const SpeechDetector = (props) => {
                 source.connect(analyser)
                 analyser.smoothingTimeConstant = 0.5
                 analyser.fftSize = 32
+
                 const initRenderLoop = (analyser) => {
                     console.log(stream)
                     const frequencyData = new Uint8Array(analyser.frequencyBinCount)
@@ -52,6 +99,7 @@ const SpeechDetector = (props) => {
 
                         requestAnimationFrame(renderFrame)
                     }
+
                     requestAnimationFrame(renderFrame)
                 }
 
@@ -62,6 +110,20 @@ const SpeechDetector = (props) => {
             })
     }
 
+    const [uploadURL, setUploadURL] = useState("")
+
+  // Upload the Audio File and retrieve the Upload URL
+  useEffect(() => {
+    if (audioFile) {
+      assembly
+        .post("/upload", audioFile)
+        .then((res) => setUploadURL(res.data.upload_url))
+        .catch((err) => console.error(err))
+    }
+  }, [audioFile])
+
+  console.log(uploadURL)
+
     const {
         transcript,
         interimTranscript,
@@ -69,15 +131,23 @@ const SpeechDetector = (props) => {
         resetTranscript,
         listening,
         } = useSpeechRecognition();
+    
+    console.log("Transcript:", {transcript,
+        interimTranscript,
+        finalTranscript,
+        resetTranscript,
+    })
 
-        const handleListing = () => {
-            console.debug("Starting to listen")
 
-            // setIsListening(true);
-            SpeechRecognition.startListening({
-              continuous: true,
-            });
-          };
+    const handleListing = () => {
+        console.debug("Starting to listen")
+
+        // setIsListening(true);
+        SpeechRecognition.startListening({
+            continuous: true,
+        });
+        };
+
 
         const stopHandle = () => {
             // setIsListening(false);
@@ -91,9 +161,10 @@ const SpeechDetector = (props) => {
         
         useEffect(() => {
             if (finalTranscript !== '') {
-             console.log('Got final result:', finalTranscript);
+                console.log('Got final result:', finalTranscript);
+                const score = sentiment.analyze(finalTranscript)
             }
-            }, [interimTranscript, finalTranscript]);
+        }, [interimTranscript, finalTranscript]);
 
 
     useEffect(() => {
@@ -104,14 +175,12 @@ const SpeechDetector = (props) => {
 
             return transcriptinput + " " + transcript
         })
+
         if (transcript.length > 130) {
             resetTranscript()
         }
     }, [transcript])
 
-    SpeechRecognition.startListening({
-        continuous: true,
-      });
 
     if (!SpeechRecognition.browserSupportsSpeechRecognition()) {
         return null
@@ -119,7 +188,16 @@ const SpeechDetector = (props) => {
 
     return (
         <>
+        {/* <div style={{ zIndex: 9999}}>
+                    <p>Microphone: {listening ? 'on' : 'off'}</p>
+                    <button onClick={() => {console.log("Done"); SpeechRecognition.startListening(); console.log("Transcript:", transcript)}}>Start</button>
+                    <button onClick={() => {console.log("Stopped"); SpeechRecognition.stopListening(); console.log("Transcript:", transcript)}}>Stop</button>
+                    <button onClick={resetTranscript}>Reset</button>
+                    <p>{transcript}</p>
+                    </div> */}
+
             <div className="speech-detector">
+                
                 <div id="visualizer" ref={visualizerRef}>
                     <div></div>
                     <div></div>
@@ -138,8 +216,18 @@ const SpeechDetector = (props) => {
                         <span>{transcript}&nbsp;</span>
                     </div> */}
                 </div>
+
+                
             </div>
-            {!clicked ? <img onClick={startRecording} id="start-recording" src={start} /> : null}
+
+            {!clicked ? <img onClick={() => {
+                console.debug("Start recording")
+                startRecordingAudio()
+                setTimeout(() => {
+                    console.debug("Stopping recording audio")
+                    stopRecordingAudio()
+                }, 5000)
+            }} id="start-recording" src={start} /> : null}
         </>
     )
 }
