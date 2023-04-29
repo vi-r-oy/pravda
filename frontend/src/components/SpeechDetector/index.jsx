@@ -16,6 +16,7 @@ const SpeechDetector = (props) => {
         const values = Object.values(data)
         const dataMap = { 0: 5, 1: 2, 2: 0, 3: 3, 4: 5, 5: 2, 6: 0, 7: 3, 8: 5 }
         const visualElements = document.querySelectorAll("#visualizer > div")
+
         for (let i = 0; i < visualValueCount; ++i) {
             const value = values[dataMap[i]] / 255
             if (visualElements && visualElements[i]) {
@@ -61,16 +62,56 @@ const SpeechDetector = (props) => {
             })
     }
 
-    const { transcript, resetTranscript } = useSpeechRecognition()
+    const {
+        transcript,
+        interimTranscript,
+        finalTranscript,
+        resetTranscript,
+        listening,
+        } = useSpeechRecognition();
+
+        const handleListing = () => {
+            console.debug("Starting to listen")
+
+            // setIsListening(true);
+            SpeechRecognition.startListening({
+              continuous: true,
+            });
+          };
+
+        const stopHandle = () => {
+            // setIsListening(false);
+            SpeechRecognition.stopListening();
+        };
+
+        const handleReset = () => {
+            stopHandle();
+            resetTranscript();
+        };
+        
+        useEffect(() => {
+            if (finalTranscript !== '') {
+             console.log('Got final result:', finalTranscript);
+            }
+            }, [interimTranscript, finalTranscript]);
+
 
     useEffect(() => {
+        handleListing()
+
         props.setCurrentTranscript((transcriptinput) => {
+            console.debug("Transcript:", transcript)
+
             return transcriptinput + " " + transcript
         })
         if (transcript.length > 130) {
             resetTranscript()
         }
     }, [transcript])
+
+    SpeechRecognition.startListening({
+        continuous: true,
+      });
 
     if (!SpeechRecognition.browserSupportsSpeechRecognition()) {
         return null
@@ -90,11 +131,12 @@ const SpeechDetector = (props) => {
                     <div></div>
                     <div></div>
                 </div>
+
                 <div className="speech-content">
-                    <div>
+                    {/* <div>
                         <h1>Live Transcript</h1>
                         <span>{transcript}&nbsp;</span>
-                    </div>
+                    </div> */}
                 </div>
             </div>
             {!clicked ? <img onClick={startRecording} id="start-recording" src={start} /> : null}

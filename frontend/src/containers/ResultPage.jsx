@@ -20,13 +20,6 @@ const ResultPageContainer = (props) => {
     const [overallHealthScore, setOverallHealthScore] = useState(0)
     const [physicalHealthScore, setPhysicalHealthScore] = useState(0)
 
-    useEffect(() => {
-        setTimeout(() => {
-            setMentalHealthScore(89)
-            setOverallHealthScore(90)
-            setPhysicalHealthScore(91)
-        }, 2000)
-    }, [])
 
     const [newEmotionData, setEmotion] = useState([
         ["name1", "318"],
@@ -51,6 +44,35 @@ const ResultPageContainer = (props) => {
         console.log(sortable)
         setEmotion(sortable.slice(0, 5))
     }, [props.emotionData])
+
+
+    function ran(x, y) {
+        return Math.floor(Math.random() * (y - x + 1)) + x
+    }
+
+    useEffect(() => {
+        let mentalHealthScore = localStorage.getItem("mental-health-score")
+        let overallHealthScore = localStorage.getItem("overall-health-score")
+        let physicalHealthScore = localStorage.getItem("physical-health-score")
+
+
+        setTimeout(() => {
+            if(!mentalHealthScore || !overallHealthScore || !physicalHealthScore) {
+                mentalHealthScore = ran(85, 93)
+                overallHealthScore = ran(86, 94)
+                physicalHealthScore = ran(70, 93)
+
+                localStorage.setItem("mental-health-score", mentalHealthScore)
+                localStorage.setItem("overall-health-score", overallHealthScore)
+                localStorage.setItem("physical-health-score", physicalHealthScore)
+            }
+
+            setMentalHealthScore(mentalHealthScore)
+            setOverallHealthScore(overallHealthScore)
+            setPhysicalHealthScore(physicalHealthScore)
+        }, 2500)
+    }, [])
+
 
     return (
         <>
@@ -88,6 +110,7 @@ const ResultPageContainer = (props) => {
                 <HeartRateGraph data={props.heartData} />
                 <BarGraph emotions={newEmotionData} />
             </div>
+
             <PrognosisChart
                 progonsis={[
                     ["Inconsistent Heart Rate", "32"],
